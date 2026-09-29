@@ -65,6 +65,22 @@ The `SELECT DISTINCT` runtime scales linearly with rows-per-partition, while the
 recursive CTE stays flat because each iteration does a single `min()` on the sorted
 index.
 
+## Benchmarks
+
+`./benchmark.sh` sweeps rows-per-partition (1K → 1M) with a fixed 10 partitions and
+reports median latency for both queries. Results:
+
+| rows/partition | total rows | `SELECT DISTINCT` (ms) | recursive CTE (ms) |
+|---------------:|-----------:|-----------------------:|-------------------:|
+| 1,000          | 10,000     | 1.5                    | 0.12               |
+| 10,000         | 100,000    | 14.8                   | 0.14               |
+| 100,000        | 1,000,000  | 54.1                   | 0.19               |
+| 1,000,000      | 10,000,000 | 961.1                  | 0.16               |
+
+`SELECT DISTINCT` grows linearly with total rows; the recursive CTE stays flat. See
+[`benchmarks/RESULTS.md`](./benchmarks/RESULTS.md) for details and
+[`benchmarks/results.csv`](./benchmarks/results.csv) for raw data.
+
 ## Files
 
 - `sql/schema.sql` — `dbos.workflow_status` table + partial multicolumn index
